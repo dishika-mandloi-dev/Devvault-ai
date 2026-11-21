@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CrimeVision PRO — Multimodal Forensic Intelligence & Digital Evidence Ledger</title>
+  <meta name="description" content="Next-generation multimodal forensic intelligence platform unifying visual perception, acoustic triangulation, temporal trajectory tracking, and deterministic chain-of-custody verification." />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+
+  <!-- Fonts: Plus Jakarta Sans, Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS Engine -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            obsidian: {
+              950: '#06080d',
+              900: '#0a0d14',
+              850: '#0e121c',
+              800: '#141824',
+              700: '#1b2233',
+            },
+            cyan: {
+              glow: '#00f0ff',
+              primary: '#00d2ff',
+              subtle: 'rgba(0, 240, 255, 0.12)',
+              border: 'rgba(0, 240, 255, 0.28)',
+            },
+            emerald: {
+              glow: '#10b981',
+              subtle: 'rgba(16, 185, 129, 0.12)',
+            },
+            indigo: {
+              glow: '#6366f1',
+              subtle: 'rgba(99, 102, 241, 0.15)',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'radar-sweep': 'radarSweep 4s linear infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-8px)' },
+            },
+            radarSweep: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' },
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+    body {
+      background-color: #06080d;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+    .tactical-grid {
+      background-size: 32px 32px;
+      background-image:
+        linear-gradient(to right, rgba(0, 240, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 240, 255, 0.035) 1px, transparent 1px);
+    }
+    .hero-radial-glow {
+      background: radial-gradient(circle at 50% 15%, rgba(0, 240, 255, 0.12) 0%, rgba(99, 102, 241, 0.06) 40%, transparent 75%);
+    }
+    .card-glass {
+      background: rgba(14, 18, 28, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-glass:hover {
+      border-color: rgba(0, 240, 255, 0.32);
+      box-shadow: 0 16px 36px -10px rgba(0, 240, 255, 0.12);
+      transform: translateY(-2px);
+    }
+    .hud-corner {
+      position: relative;
+    }
+    .hud-corner::before, .hud-corner::after {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      pointer-events: none;
+      border-color: rgba(0, 240, 255, 0.5);
+    }
+    .hud-corner::before {
+      top: -1px;
+      left: -1px;
+      border-top: 1.5px solid;
+      border-left: 1.5px solid;
+    }
+    .hud-corner::after {
+      bottom: -1px;
+      right: -1px;
+      border-bottom: 1.5px solid;
+      border-right: 1.5px solid;
+    }
+    .glow-cyan-btn {
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
+    }
+    .glow-cyan-btn:hover {
+      box-shadow: 0 0 30px rgba(0, 240, 255, 0.55);
+    }
+    .scanline-overlay {
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.25) 50%,
+        rgba(0, 0, 0, 0.25)
+      );
+      background-size: 100% 4px;
+    }
+  </style>
+</head>
+<body class="bg-obsidian-950 text-slate-200 selection:bg-cyan-500/30 selection:text-cyan-200">
+
+  <!-- ================= TOP TELEMETRY RIBBON ================= -->
+  <div class="w-full bg-obsidian-900/90 border-b border-white/[0.06] text-[11px] font-mono py-1.5 px-4 overflow-hidden select-none">
+    <div class="max-w-7xl mx-auto flex items-center justify-between text-slate-400">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 text-emerald-400 font-semibold">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          SYS.ONLINE
+        </span>
+        <span class="text-white/20">|</span>
+        <span class="hidden sm:inline">NODES: <strong class="text-slate-200">RT-DETR-R50 • CLIP ViT • WHISPER-LARGE</strong></span>
+        <span class="hidden md:inline text-white/20">|</span>
+        <span class="hidden md:inline">AUDIT: <strong class="text-cyan-primary">FIPS-140-3 SHA-256 DETERMINISTIC</strong></span>
+      </div>
+      <div class="flex items-center gap-3">
+        <span class="text-slate-400">CLEARANCE: <span class="text-emerald-400 font-semibold">LEVEL-4 EXAMINER</span></span>
+        <span class="text-white/20">|</span>
+        <span class="text-slate-400">LATENCY: <span class="text-cyan-primary">19ms</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= NAVIGATION ================= -->
+  <header class="sticky top-0 z-50 w-full border-b border-white/[0.07] bg-obsidian-950/85 backdrop-blur-xl transition-all">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      
+      <!-- Brand Logo -->
+      <a href="/" class="flex items-center gap-3.5 group">
+        <div class="relative w-10 h-10 rounded-xl bg-obsidian-850 border border-cyan-500/30 flex items-center justify-center text-cyan-glow group-hover:border-cyan-glow/70 group-hover:shadow-[0_0_15px_rgba(0,240,255,0.3)] transition-all duration-300">
+          <!-- Custom High-Tech Forensic Reticle SVG -->
+          <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-dasharray="2 3" opacity="0.6"/>
+            <polygon points="12 3 19 8 19 16 12 21 5 16 5 8" stroke="currentColor"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.3"/>
+            <circle cx="12" cy="12" r="1.5" fill="currentColor"/>
+          </svg>
+          <span class="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-glow"></span>
+        </div>
+        <div class="flex flex-col">
+          <div class="flex items-center gap-2">
+            <span class="text-lg font-bold font-sans tracking-tight text-white group-hover:text-cyan-100 transition">CrimeVision</span>
+            <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-glow border border-cyan-500/30 font-mono tracking-wider">PRO</span>
+          </div>
+          <span class="text-[10px] uppercase tracking-widest text-slate-400 font-mono -mt-0.5">Forensic Intelligence OS</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden lg:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#overview" class="hover:text-cyan-glow transition-colors">Overview</a>
+        <a href="#capabilities" class="hover:text-cyan-glow transition-colors">Analytical Engines</a>
+        <a href="#workflow" class="hover:text-cyan-glow transition-colors">Investigation Protocol</a>
+        <a href="#scene3d-section" class="hover:text-cyan-glow transition-colors">3D Scene Reconstructor</a>
+        <a href="#governance" class="hover:text-cyan-glow transition-colors">Governance &amp; Rigor</a>
+      </nav>
+
+      <!-- Auth & Actions -->
+      <div class="flex items-center gap-3">
+        {% if current_user %}
+        <div class="flex items-center gap-3">
+          <div class="hidden sm:flex flex-col text-right font-mono">
+            <span class="text-xs font-semibold text-slate-200">{{ current_user.display_name or current_user.username }}</span>
+            <span class="text-[10px] text-cyan-glow uppercase tracking-wider">{{ current_user.role or 'INVESTIGATOR' }}</span>
+          </div>
+          <a href="/workspace" class="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold font-mono uppercase tracking-wider text-obsidian-950 bg-cyan-glow hover:bg-cyan-300 rounded-lg transition glow-cyan-btn">
+            <span>Workspace</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <button id="landing-btn-logout" class="text-xs font-mono text-rose-400 hover:text-rose-300 px-3 py-2 rounded-lg border border-rose-500/20 hover:bg-rose-500/10 transition">
+            Sign Out
+          </button>
+        </div>
+        {% else %}
+        <div class="flex items-center gap-2 sm:gap-3">
+          <a href="/login" class="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3.5 py-2 rounded-lg border border-white/10 hover:bg-white/[0.04] transition">
+            Sign In
+          </a>
+          <a href="/workspace" class="inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 text-xs font-bold font-mono uppercase tracking-wider text-obsidian-950 bg-cyan-glow hover:bg-cyan-300 rounded-lg transition glow-cyan-btn">
+            <span>Launch Terminal</span>
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= HERO SECTION ================= -->
+  <section class="relative pt-16 pb-24 lg:pt-24 lg:pb-32 overflow-hidden border-b border-white/[0.06]" id="overview">
+    <div class="absolute inset-0 hero-radial-glow pointer-events-none"></div>
+    <div class="absolute inset-0 tactical-grid opacity-70 pointer-events-none"></div>
+
+    <div class="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+
+      <!-- Left Column: Copy & Actions -->
+      <div class="lg:col-span-6 flex flex-col justify-center">
+        <!-- Eyebrow Pill -->
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 w-fit mb-6 shadow-[0_0_12px_rgba(0,240,255,0.15)]">
+          <span class="w-2 h-2 rounded-full bg-cyan-glow animate-pulse"></span>
+          <span class="text-[11px] font-mono font-semibold tracking-wider text-cyan-glow uppercase">Next-Gen Digital Forensics Suite</span>
+        </div>
+
+        <!-- Heading -->
+        <h1 class="text-4xl sm:text-5xl lg:text-[56px] font-extrabold font-sans text-white tracking-tight leading-[1.08] mb-6">
+          Autonomous Multimodal<br />
+          <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-glow via-cyan-primary to-indigo-400">
+            Forensic Intelligence
+          </span><br />
+          &amp; Custody Ledger.
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="text-base sm:text-lg text-slate-300 leading-relaxed max-w-xl mb-9 font-normal">
+          Unify surveillance video, acoustic wiretaps, and physical evidence into an examiner-guided neural correlation platform with deterministic SHA-256 cryptographic chain of custody.
+        </p>
+
+        <!-- CTA Buttons -->
+        <div class="flex flex-wrap items-center gap-4">
+          <a href="/workspace" class="px-6 py-3.5 text-xs font-mono uppercase tracking-wider font-bold text-obsidian-950 bg-cyan-glow hover:bg-cyan-300 rounded-lg transition glow-cyan-btn flex items-center gap-2.5">
+            <span>Launch Investigation Workspace</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+          <a href="#capabilities" class="px-6 py-3.5 text-xs font-mono uppercase tracking-wider font-semibold text-slate-300 hover:text-white bg-obsidian-850 hover:bg-obsidian-800 border border-white/10 rounded-lg transition flex items-center gap-2">
+            <span>Analytical Engines</span>
+            <svg class="w-4 h-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+        </div>
+
+        <!-- System Architecture Badges -->
+        <div class="mt-12 pt-8 border-t border-white/[0.08] grid grid-cols-3 gap-6 max-w-lg">
+          <div>
+            <div class="text-[10px] uppercase tracking-wider font-mono text-cyan-glow mb-1 font-semibold">NEURAL VISION</div>
+            <div class="text-sm font-semibold text-white">RT-DETR + CLIP</div>
+            <div class="text-[11px] text-slate-400">Real-time object bounding</div>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider font-mono text-cyan-glow mb-1 font-semibold">ACOUSTIC NLP</div>
+            <div class="text-sm font-semibold text-white">Whisper Large v3</div>
+            <div class="text-[11px] text-slate-400">PCM 16kHz speech sync</div>
+          </div>
+          <div>
+            <div class="text-[10px] uppercase tracking-wider font-mono text-cyan-glow mb-1 font-semibold">CUSTODY LEDGER</div>
+            <div class="text-sm font-semibold text-white">SHA-256 Provenance</div>
+            <div class="text-[11px] text-slate-400">Court-admissible reports</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Interactive Tactical HUD Mockup -->
+      <div class="lg:col-span-6">
+        <div class="relative rounded-2xl border border-cyan-500/25 bg-obsidian-900/90 p-5 shadow-2xl shadow-black/90 card-glass hud-corner scanline-overlay">
+          
+          <!-- Top HUD Window Bar -->
+          <div class="flex items-center justify-between pb-4 mb-4 border-b border-white/[0.08]">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></span>
+              <span class="ml-2 text-xs font-mono text-cyan-glow font-semibold tracking-wide">CASE-2026-X89 // ACTIVE_SCRUTINY</span>
+            </div>
+            <div class="flex items-center gap-2 text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              FUSION MATRIX SYNCED
+            </div>
+          </div>
+
+          <!-- Central Tactical Canvas -->
+          <div class="relative grid grid-cols-12 gap-3.5">
+            
+            <!-- Vision Telemetry Pane (7 Cols) -->
+            <div class="col-span-12 sm:col-span-7 bg-obsidian-850 rounded-xl border border-white/[0.08] p-3 flex flex-col justify-between relative overflow-hidden">
+              <div class="flex items-center justify-between text-xs mb-2">
+                <span class="font-mono text-slate-300 font-semibold text-[11px]">CCTV-NORTH-PERIMETER.RAW</span>
+                <span class="text-[10px] font-mono bg-cyan-500/10 text-cyan-glow px-1.5 py-0.5 rounded border border-cyan-500/20">CAM-04</span>
+              </div>
+
+              <!-- Surveillance Frame Mockup -->
+              <div class="h-48 rounded-lg bg-obsidian-950 border border-cyan-500/20 relative flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-tr from-cyan-950/20 to-transparent"></div>
+                
+                <!-- Crosshair Grid -->
+                <div class="absolute inset-0 opacity-15">
+                  <div class="w-full h-full border-t border-b border-cyan-400 top-1/2 -translate-y-1/2 absolute"></div>
+                  <div class="h-full w-full border-l border-r border-cyan-400 left-1/2 -translate-x-1/2 absolute"></div>
+                </div>
+
+                <!-- Detected Target Box 1 (Vehicle) -->
+                <div class="absolute top-8 left-6 w-36 h-24 border border-cyan-glow rounded bg-cyan-500/10 p-1.5 flex flex-col justify-between shadow-[0_0_12px_rgba(0,240,255,0.2)]">
+                  <div class="flex items-center justify-between">
+                    <span class="text-[9px] font-mono font-bold px-1 py-0.2 rounded bg-obsidian-900 text-cyan-glow border border-cyan-500/40">
+                      RT-DETR: VEHICLE (97.4%)
+                    </span>
+                  </div>
+                  <div class="text-[8px] font-mono text-slate-400">XYWH: [142, 88, 240, 160]</div>
+                </div>
+
+                <!-- Detected Target Box 2 (Person) -->
+                <div class="absolute bottom-4 right-8 w-20 h-32 border border-emerald-400 rounded bg-emerald-500/10 p-1.5 flex flex-col justify-between shadow-[0_0_12px_rgba(16,185,129,0.2)]">
+                  <span class="text-[8px] font-mono font-bold px-1 py-0.2 rounded bg-obsidian-900 text-emerald-400 border border-emerald-500/40">
+                    PERSON (94.1%)
+                  </span>
+                  <div class="text-[8px] font-mono text-emerald-300">CLIP: SUSPECT_A</div>
+                </div>
+              </div>
+
+              <div class="mt-2.5 flex items-center justify-between text-[11px] font-mono text-slate-400">
+                <span class="flex items-center gap-1.5 text-slate-300">
+                  <span class="material-symbols-outlined text-[15px] text-cyan-glow">visibility</span>
+                  Real-time Neural Perception
+                </span>
+                <span class="text-[10px] text-emerald-400">SHA-256 VERIFIED</span>
+              </div>
+            </div>
+
+            <!-- Audio & Temporal Feeds (5 Cols) -->
+            <div class="col-span-12 sm:col-span-5 flex flex-col gap-3">
+              
+              <!-- Acoustic Spectrogram Strip -->
+              <div class="bg-obsidian-850 rounded-xl border border-white/[0.08] p-3 flex-1 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-mono text-slate-300 font-semibold text-[11px]">DISPATCH_CH7.WAV</span>
+                  <span class="text-[9px] font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">WHISPER-V3</span>
+                </div>
+                
+                <!-- Glowing Waveform Bars -->
+                <div class="h-14 bg-obsidian-950 rounded-lg border border-white/[0.06] px-3 flex items-center justify-between gap-1">
+                  <div class="w-1 bg-cyan-600 h-3 rounded-full"></div>
+                  <div class="w-1 bg-cyan-500 h-6 rounded-full"></div>
+                  <div class="w-1 bg-cyan-glow h-10 rounded-full shadow-[0_0_6px_#00f0ff]"></div>
+                  <div class="w-1 bg-cyan-primary h-8 rounded-full shadow-[0_0_6px_#00f0ff]"></div>
+                  <div class="w-1 bg-cyan-glow h-11 rounded-full shadow-[0_0_8px_#00f0ff]"></div>
+                  <div class="w-1 bg-cyan-500 h-5 rounded-full"></div>
+                  <div class="w-1 bg-indigo-400 h-9 rounded-full shadow-[0_0_6px_#818cf8]"></div>
+                  <div class="w-1 bg-indigo-500 h-7 rounded-full"></div>
+                  <div class="w-1 bg-cyan-600 h-4 rounded-full"></div>
+                  <div class="w-1 bg-cyan-700 h-2 rounded-full"></div>
+                </div>
+
+                <div class="mt-2 text-[10px] font-mono text-slate-300 italic truncate">
+                  "...egress through gate four at 02:41:10..."
+                </div>
+              </div>
+
+              <!-- Temporal Video Frame Counter -->
+              <div class="bg-obsidian-850 rounded-xl border border-white/[0.08] p-3 flex-1 flex flex-col justify-between">
+                <div class="flex items-center justify-between text-xs mb-1">
+                  <span class="font-mono text-slate-300 font-semibold text-[11px]">CCTV_TRAJECTORY.MP4</span>
+                  <span class="text-[9px] font-mono text-emerald-400">FRAME #0640</span>
+                </div>
+                <div class="h-10 bg-obsidian-950 rounded-lg border border-white/[0.06] p-2 flex flex-col justify-between">
+                  <div class="flex items-center justify-between text-[9px] font-mono text-slate-400">
+                    <span>KEYFRAME EXTRACTION</span>
+                    <span class="text-cyan-glow">02:41:10 UTC</span>
+                  </div>
+                  <div class="w-full bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-gradient-to-r from-cyan-glow to-emerald-400 h-full w-3/4"></div>
+                  </div>
+                </div>
+                <div class="mt-1.5 text-[10px] font-mono text-slate-400 flex items-center justify-between">
+                  <span>MOTION VECTOR: CONFIRMED</span>
+                  <span class="text-emerald-400">Δv = +12.4 m/s</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Fusion Corroboration Banner -->
+            <div class="col-span-12 bg-cyan-500/10 border border-cyan-500/30 rounded-xl p-3 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-glow">
+                  <span class="material-symbols-outlined text-[18px]">hub</span>
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-white font-mono">Cross-Modal Synthesis Corroborated</div>
+                  <div class="text-[11px] text-slate-300">Acoustic gate clearance timestamp matches camera vehicle departure precisely (&Delta;t = 0.42s).</div>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono text-cyan-glow bg-cyan-500/20 px-2.5 py-1 rounded border border-cyan-500/40 font-bold whitespace-nowrap">
+                PROVENANCE 99.8%
+              </span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION: INTERACTIVE 3D SPATIAL SCENE RECONSTRUCTOR ================= -->
+  <section id="scene3d-section" class="py-24 border-b border-white/[0.06] bg-obsidian-900 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Section Header -->
+      <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+        <div class="max-w-2xl">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono text-xs uppercase tracking-wider mb-3">
+            <span class="material-symbols-outlined text-[14px]">view_in_ar</span>
+            Three.js Spatial Engine
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold font-sans text-white tracking-tight">
+            Interactive 3D Crime Scene Reconstruction
+          </h2>
+          <p class="mt-3 text-slate-400 text-sm sm:text-base leading-relaxed">
+            Rotate, zoom, and inspect camera positions, bounding boxes, and physical evidence in an interactive 3D spatial coordinate viewport powered by WebGL.
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono text-cyan-glow bg-cyan-500/10 px-3 py-1.5 rounded-lg border border-cyan-500/30">
+            [Left Click + Drag: Rotate | Scroll: Zoom]
+          </span>
+        </div>
+      </div>
+
+      <!-- 3D Canvas Box -->
+      <div class="rounded-2xl border border-cyan-500/30 bg-obsidian-950 p-2 shadow-2xl relative overflow-hidden card-glass hud-corner">
+        <div class="h-[460px] sm:h-[520px] w-full rounded-xl overflow-hidden relative bg-[#04060b]">
+          <canvas id="landing-three-canvas" class="w-full h-full block cursor-grab active:cursor-grabbing"></canvas>
+          
+          <!-- Tactical HUD Overlay on 3D Canvas -->
+          <div class="absolute top-4 left-4 bg-obsidian-900/85 backdrop-blur-md p-3 rounded-lg border border-white/10 font-mono text-xs text-slate-300 space-y-1 pointer-events-none">
+            <div class="text-cyan-glow font-bold flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-cyan-glow animate-pulse"></span>
+              SPATIAL MATRIX: GRID_ACTIVE
+            </div>
+            <div>COORDINATE SPACE: <span class="text-white">XYZ [-24, +24]</span></div>
+            <div>ORBIT CONTROLS: <span class="text-emerald-400">ENABLED (AUTO-ROTATE)</span></div>
+          </div>
+
+          <!-- Legend Overlay -->
+          <div class="absolute bottom-4 right-4 bg-obsidian-900/85 backdrop-blur-md p-3 rounded-lg border border-white/10 font-mono text-[11px] text-slate-300 space-y-1.5 pointer-events-none">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-sky-400 inline-block"></span>
+              <span>Person Bounding Volumes</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-indigo-400 inline-block"></span>
+              <span>Vehicle Spatial Volume</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>
+              <span>Physical Evidence Artifact</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION: 4 CORE ANALYTICAL ENGINES ================= -->
+  <section id="capabilities" class="py-24 border-b border-white/[0.06] bg-obsidian-950 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-glow font-mono text-xs uppercase tracking-wider mb-3">
+          <span class="material-symbols-outlined text-[14px]">psychology</span>
+          Multimodal Perception Suite
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold font-sans text-white tracking-tight">
+          Purpose-Built Analytical Engines for Forensic Rigor
+        </h2>
+        <p class="mt-3 text-base text-slate-400">
+          Engineered to isolate facts, verify acoustic timestamps, extract motion trajectories, and maintain zero cognitive overload for examiners.
+        </p>
+      </div>
+
+      <!-- 4 High-Tech Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Card 1: Image Perception -->
+        <div class="card-glass rounded-2xl p-7 flex flex-col justify-between hud-corner">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-glow mb-6">
+              <span class="material-symbols-outlined text-[26px]">image_search</span>
+            </div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-cyan-glow mb-1 font-semibold">ENGINE 01</div>
+            <h3 class="text-xl font-bold font-sans text-white mb-2.5">Neural Vision Perception</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mb-6">
+              RT-DETR real-time bounding boxes, CLIP zero-shot classification, and BLIP contextual natural language captions with exact normalized coordinate mapping.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>FORMATS: RAW, PNG, JPEG, TIFF</span>
+            <span class="text-cyan-glow font-semibold">99.1% ACC</span>
+          </div>
+        </div>
+
+        <!-- Card 2: Acoustic Forensics -->
+        <div class="card-glass rounded-2xl p-7 flex flex-col justify-between hud-corner">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mb-6">
+              <span class="material-symbols-outlined text-[26px]">graphic_eq</span>
+            </div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-indigo-400 mb-1 font-semibold">ENGINE 02</div>
+            <h3 class="text-xl font-bold font-sans text-white mb-2.5">Acoustic Waveform Analysis</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mb-6">
+              Whisper Large 16kHz PCM multi-chunk neural transcription, acoustic anomaly detection, speaker offset tracking, and forensic language identification.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>WAV, MP3, FLAC, M4A</span>
+            <span class="text-indigo-400 font-semibold">30s CHUNKS</span>
+          </div>
+        </div>
+
+        <!-- Card 3: Temporal Trajectory -->
+        <div class="card-glass rounded-2xl p-7 flex flex-col justify-between hud-corner">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-6">
+              <span class="material-symbols-outlined text-[26px]">videocam</span>
+            </div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-emerald-400 mb-1 font-semibold">ENGINE 03</div>
+            <h3 class="text-xl font-bold font-sans text-white mb-2.5">Video Temporal Trajectory</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mb-6">
+              Surveillance keyframe extraction, object trajectory tracking across camera views, motion velocity analysis, and chronological sequence synthesis.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>MP4, MKV, AVI, MOV</span>
+            <span class="text-emerald-400 font-semibold">60 FPS SYNC</span>
+          </div>
+        </div>
+
+        <!-- Card 4: Evidence Fusion -->
+        <div class="card-glass rounded-2xl p-7 flex flex-col justify-between hud-corner">
+          <div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-6">
+              <span class="material-symbols-outlined text-[26px]">hub</span>
+            </div>
+            <div class="text-[10px] font-mono uppercase tracking-wider text-amber-400 mb-1 font-semibold">ENGINE 04</div>
+            <h3 class="text-xl font-bold font-sans text-white mb-2.5">Cross-Modal Evidence Fusion</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed mb-6">
+              Deterministic cross-modal alignment matrix correlating audio dispatch times with camera visual frames, scoring corroborations and surfacing conflicts.
+            </p>
+          </div>
+          <div class="pt-4 border-t border-white/[0.06] flex items-center justify-between text-xs font-mono text-slate-400">
+            <span>GRAPH MATRIX v4.2</span>
+            <span class="text-amber-400 font-semibold">ZERO BIAS</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION: INVESTIGATION WORKFLOW PROTOCOL ================= -->
+  <section id="workflow" class="py-24 border-b border-white/[0.06] bg-obsidian-900 relative">
+    <div class="max-w-7xl mx-auto px-6">
+      
+      <div class="text-center max-w-2xl mx-auto mb-16">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-glow font-mono text-xs uppercase tracking-wider mb-3">
+          <span class="material-symbols-outlined text-[14px]">policy</span>
+          Deterministic Chain-of-Custody
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold font-sans text-white tracking-tight">
+          Three-Stage Investigative Protocol
+        </h2>
+        <p class="mt-3 text-slate-400 text-sm sm:text-base">
+          From intake hash registration to court-admissible forensic PDF dossier export.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Step 1 -->
+        <div class="card-glass rounded-2xl p-8 relative flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <span class="text-4xl font-extrabold font-mono text-cyan-glow/40">01</span>
+              <div class="w-10 h-10 rounded-lg bg-obsidian-850 border border-white/10 flex items-center justify-center text-cyan-glow">
+                <span class="material-symbols-outlined text-[20px]">fingerprint</span>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold font-sans text-white mb-3">Ingest &amp; Hash Integrity</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Every digital artifact ingested is immediately hashed via SHA-256 cryptographic standards, logging byte length, MIME type, and immutable intake timestamp.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/[0.06] text-xs font-mono text-cyan-glow">
+            &check; Tamper-Proof Storage Lock
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="card-glass rounded-2xl p-8 relative flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <span class="text-4xl font-extrabold font-mono text-cyan-glow/40">02</span>
+              <div class="w-10 h-10 rounded-lg bg-obsidian-850 border border-white/10 flex items-center justify-center text-cyan-glow">
+                <span class="material-symbols-outlined text-[20px]">neurology</span>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold font-sans text-white mb-3">Neural Inferences &amp; Corroboration</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Run local and cloud computer vision and speech models. Align timeline events, isolate speech segments, and compute cross-modal correlation coefficients.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/[0.06] text-xs font-mono text-cyan-glow">
+            &check; Human-in-the-Loop Verification
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="card-glass rounded-2xl p-8 relative flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-6">
+              <span class="text-4xl font-extrabold font-mono text-cyan-glow/40">03</span>
+              <div class="w-10 h-10 rounded-lg bg-obsidian-850 border border-white/10 flex items-center justify-center text-cyan-glow">
+                <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+              </div>
+            </div>
+            <h3 class="text-xl font-bold font-sans text-white mb-3">Court Dossier &amp; 3D Export</h3>
+            <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+              Compile full chain-of-custody logs, verified transcripts, detection snapshots, and examiner notes into court-admissible forensic PDF dossiers.
+            </p>
+          </div>
+          <div class="mt-8 pt-4 border-t border-white/[0.06] text-xs font-mono text-cyan-glow">
+            &check; Automated PDF Report Generation
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ================= SECTION: EXAMINER GOVERNANCE ================= -->
+  <section id="governance" class="py-24 border-b border-white/[0.06] bg-obsidian-950 relative">
+    <div class="max-w-4xl mx-auto px-6">
+      <div class="p-8 sm:p-10 rounded-2xl card-glass border border-cyan-500/25 relative overflow-hidden hud-corner">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-6">
+          <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-glow shrink-0 shadow-[0_0_15px_rgba(0,240,255,0.2)]">
+            <span class="material-symbols-outlined text-[28px]">gavel</span>
+          </div>
+          <div>
+            <div class="text-xs font-mono uppercase tracking-widest text-cyan-glow mb-1 font-semibold">FORENSIC COMPLIANCE &amp; ETHICS</div>
+            <h2 class="text-2xl sm:text-3xl font-bold font-sans text-white">Responsible AI &amp; Evidentiary Provenance</h2>
+          </div>
+        </div>
+
+        <div class="space-y-4 text-slate-300 text-sm leading-relaxed">
+          <p>
+            CrimeVision PRO is designed as an investigative decision-support system. All neural object detections, transcripts, and cross-modal correlations include explicit model IDs, bounding coordinates, confidence metrics, and verifiable cryptographic hashes.
+          </p>
+          <p>
+            AI-assisted findings do not supplant sworn testimony or physical investigative standards. Every inferred event requires human validation by qualified forensic examiners before introduction into formal legal filings.
+          </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400">
+          <span class="flex items-center gap-1.5 text-cyan-glow">
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            Examiner-in-the-Loop Standard
+          </span>
+          <span>Zero Black-Box Assertions • Cryptographic Reproducibility</span>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SECTION: FINAL CALL TO ACTION ================= -->
+  <section class="py-24 bg-gradient-to-b from-obsidian-950 via-obsidian-900 to-obsidian-950 relative">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded bg-cyan-500/10 border border-cyan-500/30 text-cyan-glow font-mono text-xs uppercase tracking-wider mb-4">
+        Ready for Investigation
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-extrabold font-sans tracking-tight text-white mb-6">
+        Step Into the Modern Forensic Command Center.
+      </h2>
+      <p class="text-base sm:text-lg text-slate-300 max-w-xl mx-auto mb-10 leading-relaxed font-normal">
+        Open the investigation workspace, analyze multimodal evidence, review neural findings, and compile verified forensic reports.
+      </p>
+      
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+        <a href="/workspace" class="w-full sm:w-auto px-8 py-4 text-xs font-mono uppercase tracking-wider font-bold text-obsidian-950 bg-cyan-glow hover:bg-cyan-300 rounded-lg transition glow-cyan-btn flex items-center justify-center gap-2">
+          <span>Launch Investigation Workspace</span>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="/login" class="w-full sm:w-auto px-8 py-4 text-xs font-mono uppercase tracking-wider font-semibold text-slate-300 hover:text-white bg-obsidian-850 hover:bg-obsidian-800 border border-white/10 rounded-lg transition">
+          Examiner Sign In
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="border-t border-white/[0.08] bg-obsidian-950 py-16 text-slate-400">
+    <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12">
+      
+      <!-- Brand & Mission (6 Cols) -->
+      <div class="md:col-span-6 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 rounded-lg bg-obsidian-850 border border-cyan-500/30 flex items-center justify-center text-cyan-glow">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-dasharray="2 3" opacity="0.6"/>
+                <polygon points="12 3 19 8 19 16 12 21 5 16 5 8" stroke="currentColor"/>
+              </svg>
+            </div>
+            <span class="text-base font-bold font-sans tracking-tight text-white">CrimeVision <span class="text-cyan-glow">PRO</span></span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
+            Multimodal digital forensics and investigative intelligence system. Fusing computer vision, acoustic forensics, and spatial 3D reconstruction with cryptographic custody ledgers.
+          </p>
+        </div>
+        <div class="mt-8 text-xs font-mono text-slate-500">
+          &copy; 2026 CrimeVision PRO Forensic Systems. Cryptographic Integrity Verified.
+        </div>
+      </div>
+
+      <!-- Quick Engines (3 Cols) -->
+      <div class="md:col-span-3">
+        <div class="text-xs font-mono uppercase tracking-wider text-cyan-glow mb-4 font-semibold">Analytical Modules</div>
+        <ul class="space-y-2.5 text-xs sm:text-sm text-slate-400 font-mono">
+          <li><a href="#capabilities" class="hover:text-white transition">RT-DETR Vision Perception</a></li>
+          <li><a href="#capabilities" class="hover:text-white transition">Whisper Acoustic Analysis</a></li>
+          <li><a href="#capabilities" class="hover:text-white transition">Surveillance Trajectory</a></li>
+          <li><a href="#capabilities" class="hover:text-white transition">Cross-Modal Fusion Matrix</a></li>
+          <li><a href="#scene3d-section" class="hover:text-white transition">Three.js 3D Reconstructor</a></li>
+        </ul>
+      </div>
+
+      <!-- Access & Clearance (3 Cols) -->
+      <div class="md:col-span-3">
+        <div class="text-xs font-mono uppercase tracking-wider text-cyan-glow mb-4 font-semibold">Platform Access</div>
+        <ul class="space-y-2.5 text-xs sm:text-sm text-slate-400 font-mono">
+          <li><a href="/login" class="hover:text-white transition">Examiner Sign In</a></li>
+          <li><a href="/signup" class="hover:text-white transition">Register Examiner Account</a></li>
+          <li><a href="/workspace" class="hover:text-white transition">Investigation Workspace</a></li>
+          <li><a href="#governance" class="hover:text-white transition">Responsible AI Policy</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Vendor Scripts for 3D Spatial Canvas -->
+  <script src="{{ url_for('static', filename='js/vendor/three.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/vendor/OrbitControls.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+
+  <!-- Logout Script -->
+  <script>
+    const landingLogoutBtn = document.getElementById('landing-btn-logout');
+    if (landingLogoutBtn) {
+      landingLogoutBtn.addEventListener('click', async () => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        try {
+          await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'X-CSRF-Token': csrfToken }
+          });
+          window.location.reload();
+        } catch (e) {
+          window.location.href = '/login';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
